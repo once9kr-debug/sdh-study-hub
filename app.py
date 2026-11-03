@@ -3,72 +3,102 @@ from supabase import create_client
 
 # 1. 페이지 기본 설정
 st.set_page_config(
-    page_title="SDH ACADEMY | 문제은행 시스템",
+    page_title="SDH ACADEMY | 내신·모의고사 자료 시스템",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. 너른터 스타일 매트 블랙 테마 CSS
+# 2. 고급 다크 차콜 테마 CSS (시인성 및 대비 대폭 개선)
 st.markdown("""
 <style>
-    /* 전체 배경 및 폰트 */
+    /* 전체 배경: 완전 블랙 대신 눈이 편한 다크 차콜(#121316) */
     .stApp {
-        background-color: #0f0f11;
-        color: #f1f1f1;
-        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-    }
-    
-    /* 사이드바 */
-    [data-testid="stSidebar"] {
-        background-color: #17171a;
-        border-right: 1px solid #26262b;
+        background-color: #121316 !important;
+        color: #f3f4f6 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif;
     }
 
-    /* 카드 박스 */
+    /* 상단 기본 헤더 투명화 처리 */
+    header[data-testid="stHeader"] {
+        background-color: #121316 !important;
+    }
+
+    /* 사이드바 스타일 개선 (글자 또렷하게) */
+    [data-testid="stSidebar"] {
+        background-color: #18191e !important;
+        border-right: 1px solid #272830 !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #d1d5db !important;
+    }
+    [data-testid="stSidebar"] h3, [data-testid="stSidebar"] h5 {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    /* 입력창 및 셀렉트박스 다크 스타일로 통일 (눈부심 방지) */
+    input, select, textarea, div[data-baseweb="select"] > div {
+        background-color: #1e2025 !important;
+        color: #ffffff !important;
+        border: 1px solid #32353e !important;
+        border-radius: 6px !important;
+    }
+    div[data-baseweb="select"] * {
+        color: #ffffff !important;
+    }
+
+    /* 지문 카드 스타일 (너른터 프리미엄 스타일) */
     .custom-card {
-        background-color: #1a1a1e;
-        border: 1px solid #2d2d34;
-        border-radius: 8px;
-        padding: 18px 20px;
-        margin-bottom: 14px;
-        transition: border-color 0.2s ease;
+        background-color: #181a1f;
+        border: 1px solid #282a32;
+        border-radius: 10px;
+        padding: 22px 24px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     .custom-card:hover {
-        border-color: #4f46e5;
+        border-color: #3b82f6;
     }
 
-    /* 뱃지 라벨 */
-    .badge-primary {
-        background-color: #2e2a5c;
-        color: #a5b4fc;
-        padding: 3px 10px;
+    /* 뱃지 태그 */
+    .badge-grade {
+        background-color: #1d3557;
+        color: #60a5fa;
+        padding: 4px 10px;
         border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 13px;
+        font-weight: 700;
         margin-right: 6px;
     }
-    .badge-secondary {
-        background-color: #27272a;
-        color: #a1a1aa;
-        padding: 3px 8px;
+    .badge-cat {
+        background-color: #272832;
+        color: #9ca3af;
+        padding: 4px 10px;
         border-radius: 4px;
-        font-size: 12px;
+        font-size: 13px;
         margin-right: 6px;
     }
 
-    /* 상단 요약 바 */
-    .stat-box {
-        background-color: #17171a;
-        border: 1px solid #26262b;
-        border-radius: 6px;
-        padding: 12px;
-        text-align: center;
+    /* 액션 버튼 디자인 (지문분석, 워크북 등) */
+    .stButton > button {
+        background-color: #23262f !important;
+        color: #e5e7eb !important;
+        border: 1px solid #373b46 !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        padding: 6px 14px !important;
+        transition: all 0.2s ease !important;
+    }
+    .stButton > button:hover {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+        border-color: #3b82f6 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Supabase 연동
+# 3. Supabase 클라이언트 초기화
 @st.cache_resource
 def init_supabase():
     url = st.secrets.get("SUPABASE_URL", "")
@@ -79,7 +109,7 @@ def init_supabase():
 
 supabase = init_supabase()
 
-# 4. 사이드바 (메뉴 네비게이션 & 로그인 정보)
+# 4. 사이드바 구성
 with st.sidebar:
     st.markdown("### ⚡ SDH ACADEMY")
     st.caption("캠퍼스 통합 내신·모의고사 자료 시스템")
@@ -93,15 +123,15 @@ with st.sidebar:
     
     st.divider()
     st.markdown("##### 👤 접속 교사 정보")
-    st.text("권희성 원장 (SDH 세종캠퍼스)")
+    st.markdown("**권희성 원장** (세종캠퍼스)")
     st.caption("권한: 최고 관리자 (Super Admin)")
 
 # ==========================================
-# 메뉴 1: 지문 데이터베이스 (너른터 스타일)
+# 메뉴 1: 지문 데이터베이스
 # ==========================================
 if menu == "지문 데이터베이스":
-    st.title("📚 지문 데이터베이스")
-    st.caption("원문 및 분석용 지문을 검색하고, 새로운 시험 지문을 등록합니다.")
+    st.markdown("## 📚 지문 데이터베이스")
+    st.markdown("<p style='color:#9ca3af; font-size:15px; margin-top:-10px;'>원문 및 분석용 지문을 검색하고, 신규 시험 지문을 등록합니다.</p>", unsafe_allow_html=True)
 
     tab1, tab2 = st.tabs(["🔍 지문 검색 및 열람 (너른터형 목록)", "➕ 새 지문 등록"])
 
@@ -113,7 +143,7 @@ if menu == "지문 데이터베이스":
         with col2:
             f_cat = st.selectbox("구분", ["전체", "교과서", "3월 모의고사", "6월 모의고사", "9월 모의고사", "11월 모의고사", "부교재"])
         with col3:
-            f_pub = st.text_input("출판사/교육청", placeholder="예: NE능률, 천재")
+            f_pub = st.text_input("출판사/교육청", placeholder="예: NE능률, 교육청")
         with col4:
             f_query = st.text_input("검색어 (단원, 제목, 본문 키워드)", placeholder="예: 20번, environmental, 3과")
 
@@ -133,9 +163,9 @@ if menu == "지문 데이터베이스":
             except Exception:
                 passages = []
 
-        # 임시 미리보기 데이터 (DB 연결 전 화면 구성 확인용)
+        # 임시 샘플 데이터 (DB 지문이 없을 경우 표시)
         if not passages:
-            sample_data = [
+            passages = [
                 {
                     "id": 1,
                     "grade": "고1",
@@ -143,7 +173,7 @@ if menu == "지문 데이터베이스":
                     "publisher": "서울시교육청",
                     "lesson": "20번",
                     "title": "부모의 즉각적인 개입보다 스스로 해결할 시간 주기",
-                    "original_text": "Though we are marching toward a more global, interconnected world, our children face challenges..."
+                    "original_text": "Though we are marching toward a more global, interconnected world, our children face challenges that demand critical problem solving. Giving them time to reflect is essential..."
                 },
                 {
                     "id": 2,
@@ -152,49 +182,50 @@ if menu == "지문 데이터베이스":
                     "publisher": "NE능률(김기택)",
                     "lesson": "1과",
                     "title": "A Day at the Animal Shelter",
-                    "original_text": "Last Saturday, Minho and his classmates visited the local animal shelter. They spent the whole morning..."
+                    "original_text": "Last Saturday, Minho and his classmates visited the local animal shelter. They spent the whole morning cleaning kennels and walking abandoned dogs..."
                 }
             ]
-            passages = sample_data
 
-        st.caption(f"총 {len(passages)}건의 지문이 조회되었습니다.")
+        st.markdown(f"<p style='color:#9ca3af; font-size:14px; margin-bottom:14px;'>총 <b>{len(passages)}건</b>의 지문이 조회되었습니다.</p>", unsafe_allow_html=True)
 
-        # 너른터 스타일 지문 카드 렌더링
+        # 지문 카드 리스트
         for item in passages:
             with st.container():
                 st.markdown(f"""
                 <div class="custom-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <div>
-                            <span class="badge-primary">{item.get('grade')}</span>
-                            <span class="badge-secondary">{item.get('category')}</span>
-                            <span class="badge-secondary">{item.get('publisher', '')}</span>
-                            <strong style="font-size:16px; margin-left:6px; color:#ffffff;">{item.get('lesson')}</strong>
+                            <span class="badge-grade">{item.get('grade')}</span>
+                            <span class="badge-cat">{item.get('category')}</span>
+                            <span class="badge-cat">{item.get('publisher', '')}</span>
+                            <strong style="font-size:17px; margin-left:8px; color:#ffffff;">{item.get('lesson')}</strong>
                         </div>
-                        <span style="font-size:12px; color:#71717a;">ID: #{item.get('id')}</span>
+                        <span style="font-size:13px; color:#6b7280;">문항 ID: #{item.get('id')}</span>
                     </div>
-                    <div style="font-size:15px; font-weight:600; color:#e4e4e7; margin-top:8px;">
+                    <div style="font-size:16px; font-weight:700; color:#f3f4f6; margin-bottom:8px;">
                         {item.get('title') or '제목 미입력'}
                     </div>
-                    <div style="font-size:13px; color:#a1a1aa; margin-top:6px; line-height:1.5;">
-                        {item.get('original_text')[:160]}...
+                    <div style="font-size:14px; color:#9ca3af; line-height:1.6; margin-bottom:14px;">
+                        {item.get('original_text')[:180]}...
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 지문 카드별 즉시 실행 액션 버튼
-                btn1, btn2, btn3, btn4, btn5 = st.columns([1, 1, 1, 1, 2])
-                with btn1:
+                # 액션 버튼 열
+                b1, b2, b3, b4, _ = st.columns([1.1, 1.1, 1.3, 1.1, 2.5])
+                with b1:
                     st.button("🔍 지문분석", key=f"btn_an_{item['id']}")
-                with btn2:
+                with b2:
                     st.button("📖 단어장", key=f"btn_vc_{item['id']}")
-                with btn3:
+                with b3:
                     st.button("📝 10단 워크북", key=f"btn_wb_{item['id']}")
-                with btn4:
+                with b4:
                     st.button("⚡ 변형문제", key=f"btn_qz_{item['id']}")
+                
+                st.write("")
 
     with tab2:
-        st.subheader("새 지문 등록 폼")
+        st.subheader("➕ 새 지문 등록")
         with st.form("add_passage_form"):
             c1, c2, c3 = st.columns(3)
             with c1:
@@ -219,7 +250,7 @@ if menu == "지문 데이터베이스":
                 if not in_original.strip() or not in_lesson.strip():
                     st.error("필수 항목(단원/번호, 영어 원문)을 입력해 주세요.")
                 elif not supabase:
-                    st.warning("Supabase 연결 설정(API Key) 완료 후 실제 DB에 반영됩니다.")
+                    st.warning("Supabase 연결(Secrets) 완료 후 실제 DB에 반영됩니다.")
                 else:
                     try:
                         payload = {
@@ -237,54 +268,45 @@ if menu == "지문 데이터베이스":
                         st.error(f"저장 실패: {err}")
 
 # ==========================================
-# 메뉴 2: 자료 생성기 (원클릭 맞춤 생성)
+# 메뉴 2: 자료 생성기
 # ==========================================
 elif menu == "자료 생성기":
-    st.title("⚡ 자료 생성기")
-    st.caption("선택한 지문으로 [지문분석지 / 단어장 / 10종 워크북 / 변형문제]를 생성합니다.")
+    st.markdown("## ⚡ 자료 생성기")
+    st.markdown("<p style='color:#9ca3af; font-size:15px; margin-top:-10px;'>선택한 지문으로 [지문분석지 / 단어장 / 10종 워크북 / 변형문제]를 생성합니다.</p>", unsafe_allow_html=True)
 
-    gen_col1, gen_col2 = st.columns([1, 2])
-    
+    gen_col1, gen_col2 = st.columns([1, 1.8])
     with gen_col1:
         st.subheader("1. 대상 지문 선택")
         st.selectbox("교재/모의고사 선택", ["2026년 고1 3월 모의고사", "2026년 고2 3월 모의고사", "중2 NE능률(김기택)"])
         st.multiselect("생성할 지문 번호 선택", ["18번", "19번", "20번", "21번", "22번", "23번"], default=["20번", "21번"])
         
         st.subheader("2. 생성할 패키지 선택")
-        make_analysis = st.checkbox("지문 분석지 (구문 분석 + 해석)", value=True)
-        make_vocab = st.checkbox("단어장 (표제어, 품사, 예문 빈칸)", value=True)
-        make_workbook = st.checkbox("10단계 워크북 (빈칸, 어순, 어법선택 등)", value=True)
-        make_exam = st.checkbox("기출 스타일 변형문제 (객관식/서술형)", value=True)
+        st.checkbox("지문 분석지 (구문 분석 + 해석)", value=True)
+        st.checkbox("단어장 (표제어, 품사, 예문 빈칸)", value=True)
+        st.checkbox("10단계 워크북 (빈칸, 어순, 어법선택 등)", value=True)
+        st.checkbox("기출 스타일 변형문제 (객관식/서술형)", value=True)
         
         st.subheader("3. 파일 출력 서식")
-        doc_format = st.radio("다운로드 포맷", ["DOCX (워드 A4 2단 서식)", "HWPX (한글 표준 양식)", "PDF 바로 인쇄용"])
+        st.radio("다운로드 포맷", ["DOCX (워드 A4 2단 서식)", "HWPX (한글 표준 양식)", "PDF 바로 인쇄용"])
         
         st.write("")
-        start_btn = st.button("🚀 자료 패키지 일괄 생성 시작", type="primary")
+        st.button("🚀 자료 패키지 일괄 생성 시작")
 
     with gen_col2:
         st.subheader("미리보기 및 진행 상태")
-        if start_btn:
-            st.info("Gemini 엔진이 지문을 분석하여 A4 2단 규격 문서를 조판하고 있습니다...")
-            # 진행 바 표시
-            progress = st.progress(45)
-            st.success("✅ 지문 어법 및 어휘 분석 완료")
-            st.success("✅ 10단계 워크북 데이터 생성 완료")
-            st.caption("결과 파일이 완성되면 바로 다운로드 링크가 활성화됩니다.")
-        else:
-            st.markdown("""
-            <div style="background-color:#17171a; border:1px dashed #3f3f46; border-radius:8px; padding:40px; text-align:center; color:#71717a;">
-                좌측에서 지문과 필요한 자료 유형을 선택한 뒤 [일괄 생성 시작]을 누르세요.<br>
-                생성된 문서는 학원 규격(A4 2단)이 완벽히 적용되어 깨짐 없이 출력됩니다.
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown("""
+        <div style="background-color:#181a1f; border:1px dashed #373b46; border-radius:10px; padding:60px 30px; text-align:center; color:#9ca3af;">
+            좌측에서 지문과 필요한 자료 유형을 선택한 뒤 [일괄 생성 시작]을 누르세요.<br><br>
+            생성된 문서는 학원 규격(A4 2단)이 완벽히 적용되어 깨짐 없이 출력됩니다.
+        </div>
+        """, unsafe_allow_html=True)
 
 # ==========================================
-# 메뉴 3: 기출 유형 세팅 (학교별 모방)
+# 메뉴 3: 기출 유형 세팅
 # ==========================================
 elif menu == "기출 유형 세팅":
-    st.title("🎯 학교별 기출 유형 세팅")
-    st.caption("캠퍼스 인근 고등학교/중학교의 실제 출제 스타일을 등록하여 AI가 모방하도록 설정합니다.")
+    st.markdown("## 🎯 학교별 기출 유형 세팅")
+    st.markdown("<p style='color:#9ca3af; font-size:15px; margin-top:-10px;'>인근 학교의 실제 출제 스타일을 등록하여 AI가 모방하도록 설정합니다.</p>", unsafe_allow_html=True)
 
     school_list = ["세종고등학교", "아름고등학교", "도담고등학교", "양지고등학교", "새롬고등학교"]
     sel_school = st.selectbox("설정할 대상 학교 선택", school_list)
@@ -299,33 +321,29 @@ elif menu == "기출 유형 세팅":
         st.number_input("빈칸 추론 / 주제 요약 비중 (%)", value=35)
 
     with c2:
-        st.markdown("#### 📝 대표 기출문제 예시 등록 (Few-Shot 프롬프트)")
-        st.caption("실제 학교 시험지에서 1~2문제를 복사해 넣어두면 AI가 완벽히 동일한 패턴으로 출제합니다.")
+        st.markdown("#### 📝 대표 기출문제 예시 등록 (Few-Shot)")
         st.text_area("객관식 고난도 문제 예시", height=120, placeholder="[어법] 다음 밑줄 친 ⓐ~ⓔ 중 어법상 틀린 것의 개수는?")
         st.text_area("서술형 조건 영작 문제 예시", height=120, placeholder="[조건] <보기>의 단어를 모두 사용할 것, 필요시 어형 변화...")
 
     st.button("💾 학교별 기출 템플릿 저장")
 
 # ==========================================
-# 메뉴 4: 선생님 계정 관리 (원장님 전용)
+# 메뉴 4: 선생님 계정 관리
 # ==========================================
 elif menu == "선생님 계정 관리":
-    st.title("👥 캠퍼스 선생님 계정 관리")
-    st.caption("SDH 캠퍼스 소속 강사진의 ID/PW를 발급하고 자료실 접근 권한을 관리합니다.")
+    st.markdown("## 👥 캠퍼스 선생님 계정 관리")
+    st.markdown("<p style='color:#9ca3af; font-size:15px; margin-top:-10px;'>SDH 캠퍼스 강사진의 ID/PW를 발급하고 접근 권한을 관리합니다.</p>", unsafe_allow_html=True)
 
-    col_admin1, col_admin2 = st.columns([1, 1.5])
+    col_admin1, col_admin2 = st.columns([1, 1.4])
     with col_admin1:
         st.subheader("신규 강사 계정 생성")
         with st.form("new_teacher_form"):
-            t_name = st.text_input("선생님 성함")
-            t_id = st.text_input("아이디 (이메일 형태)")
-            t_pw = st.text_input("초기 비밀번호", type="password")
-            t_campus = st.selectbox("소속 캠퍼스", ["세종 캠퍼스", "본원", "대전 캠퍼스"])
-            t_grade = st.multiselect("담당 학년", ["중등부", "고1", "고2", "고3"], default=["고1", "고2"])
-            
-            btn_add_t = st.form_submit_button("선생님 계정 발급")
-            if btn_add_t:
-                st.success(f"{t_name} 선생님의 계정이 생성되었습니다. (아이디: {t_id})")
+            st.text_input("선생님 성함")
+            st.text_input("아이디 (이메일 형태)")
+            st.text_input("초기 비밀번호", type="password")
+            st.selectbox("소속 캠퍼스", ["세종 캠퍼스", "본원", "대전 캠퍼스"])
+            st.multiselect("담당 학년", ["중등부", "고1", "고2", "고3"], default=["고1", "고2"])
+            st.form_submit_button("선생님 계정 발급")
 
     with col_admin2:
         st.subheader("현재 등록된 선생님 목록")
