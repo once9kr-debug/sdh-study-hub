@@ -9,62 +9,93 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. 고급 다크 차콜 테마 CSS (시인성 및 대비 대폭 개선)
+# 2. 고대비 다크 테마 CSS (텍스트 가독성 최적화)
 st.markdown("""
 <style>
-    /* 전체 배경: 완전 블랙 대신 눈이 편한 다크 차콜(#121316) */
+    /* 전체 배경 */
     .stApp {
         background-color: #121316 !important;
-        color: #f3f4f6 !important;
+        color: #ffffff !important;
         font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif;
     }
 
-    /* 상단 기본 헤더 투명화 처리 */
     header[data-testid="stHeader"] {
         background-color: #121316 !important;
     }
 
-    /* 사이드바 스타일 개선 (글자 또렷하게) */
+    /* 사이드바 */
     [data-testid="stSidebar"] {
         background-color: #18191e !important;
         border-right: 1px solid #272830 !important;
     }
     [data-testid="stSidebar"] * {
-        color: #d1d5db !important;
+        color: #e2e8f0 !important;
     }
     [data-testid="stSidebar"] h3, [data-testid="stSidebar"] h5 {
         color: #ffffff !important;
         font-weight: 700 !important;
     }
 
-    /* 입력창 및 셀렉트박스 다크 스타일로 통일 (눈부심 방지) */
-    input, select, textarea, div[data-baseweb="select"] > div {
+    /* 탭(Tab) 가독성 극대화 */
+    button[data-baseweb="tab"] {
+        color: #94a3b8 !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #38bdf8 !important; /* 선택된 탭 밝은 하늘색 */
+        border-bottom-color: #38bdf8 !important;
+    }
+
+    /* 모든 입력 라벨(Label: 학년, 구분, 출판사, 검색어 등) 또렷한 화이트 처리 */
+    label[data-testid="stWidgetLabel"] p {
+        color: #ffffff !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.2px;
+    }
+
+    /* 입력창 및 셀렉트 박스 내부 */
+    input, select, textarea {
         background-color: #1e2025 !important;
         color: #ffffff !important;
-        border: 1px solid #32353e !important;
+        border: 1px solid #3b4252 !important;
+        border-radius: 6px !important;
+    }
+    div[data-baseweb="select"] > div {
+        background-color: #1e2025 !important;
+        color: #ffffff !important;
+        border: 1px solid #3b4252 !important;
         border-radius: 6px !important;
     }
     div[data-baseweb="select"] * {
         color: #ffffff !important;
+        font-weight: 500 !important;
     }
 
-    /* 지문 카드 스타일 (너른터 프리미엄 스타일) */
+    /* 입력창 힌트(placeholder) 가시성 개선 */
+    input::placeholder, textarea::placeholder {
+        color: #94a3b8 !important; /* 흐린 회색 대신 잘 보이는 슬레이트 그레이 */
+        font-weight: 400;
+    }
+
+    /* 지문 카드 스타일 */
     .custom-card {
         background-color: #181a1f;
         border: 1px solid #282a32;
         border-radius: 10px;
         padding: 22px 24px;
         margin-bottom: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
     .custom-card:hover {
-        border-color: #3b82f6;
+        border-color: #38bdf8;
     }
 
     /* 뱃지 태그 */
     .badge-grade {
-        background-color: #1d3557;
-        color: #60a5fa;
+        background-color: #0369a1;
+        color: #e0f2fe;
         padding: 4px 10px;
         border-radius: 4px;
         font-size: 13px;
@@ -73,27 +104,27 @@ st.markdown("""
     }
     .badge-cat {
         background-color: #272832;
-        color: #9ca3af;
+        color: #cbd5e1;
         padding: 4px 10px;
         border-radius: 4px;
         font-size: 13px;
         margin-right: 6px;
     }
 
-    /* 액션 버튼 디자인 (지문분석, 워크북 등) */
+    /* 하단 액션 버튼 */
     .stButton > button {
-        background-color: #23262f !important;
-        color: #e5e7eb !important;
-        border: 1px solid #373b46 !important;
+        background-color: #242832 !important;
+        color: #f8fafc !important;
+        border: 1px solid #475569 !important;
         border-radius: 6px !important;
         font-weight: 600 !important;
         padding: 6px 14px !important;
         transition: all 0.2s ease !important;
     }
     .stButton > button:hover {
-        background-color: #2563eb !important;
+        background-color: #0284c7 !important;
         color: #ffffff !important;
-        border-color: #3b82f6 !important;
+        border-color: #38bdf8 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -131,7 +162,7 @@ with st.sidebar:
 # ==========================================
 if menu == "지문 데이터베이스":
     st.markdown("## 📚 지문 데이터베이스")
-    st.markdown("<p style='color:#9ca3af; font-size:15px; margin-top:-10px;'>원문 및 분석용 지문을 검색하고, 신규 시험 지문을 등록합니다.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#94a3b8; font-size:15px; margin-top:-10px;'>원문 및 분석용 지문을 검색하고, 신규 시험 지문을 등록합니다.</p>", unsafe_allow_html=True)
 
     tab1, tab2 = st.tabs(["🔍 지문 검색 및 열람 (너른터형 목록)", "➕ 새 지문 등록"])
 
@@ -163,7 +194,6 @@ if menu == "지문 데이터베이스":
             except Exception:
                 passages = []
 
-        # 임시 샘플 데이터 (DB 지문이 없을 경우 표시)
         if not passages:
             passages = [
                 {
@@ -186,9 +216,8 @@ if menu == "지문 데이터베이스":
                 }
             ]
 
-        st.markdown(f"<p style='color:#9ca3af; font-size:14px; margin-bottom:14px;'>총 <b>{len(passages)}건</b>의 지문이 조회되었습니다.</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color:#cbd5e1; font-size:14px; margin-bottom:14px;'>총 <b>{len(passages)}건</b>의 지문이 조회되었습니다.</p>", unsafe_allow_html=True)
 
-        # 지문 카드 리스트
         for item in passages:
             with st.container():
                 st.markdown(f"""
@@ -200,18 +229,17 @@ if menu == "지문 데이터베이스":
                             <span class="badge-cat">{item.get('publisher', '')}</span>
                             <strong style="font-size:17px; margin-left:8px; color:#ffffff;">{item.get('lesson')}</strong>
                         </div>
-                        <span style="font-size:13px; color:#6b7280;">문항 ID: #{item.get('id')}</span>
+                        <span style="font-size:13px; color:#94a3b8;">문항 ID: #{item.get('id')}</span>
                     </div>
-                    <div style="font-size:16px; font-weight:700; color:#f3f4f6; margin-bottom:8px;">
+                    <div style="font-size:16px; font-weight:700; color:#f8fafc; margin-bottom:8px;">
                         {item.get('title') or '제목 미입력'}
                     </div>
-                    <div style="font-size:14px; color:#9ca3af; line-height:1.6; margin-bottom:14px;">
+                    <div style="font-size:14px; color:#cbd5e1; line-height:1.6; margin-bottom:14px;">
                         {item.get('original_text')[:180]}...
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 액션 버튼 열
                 b1, b2, b3, b4, _ = st.columns([1.1, 1.1, 1.3, 1.1, 2.5])
                 with b1:
                     st.button("🔍 지문분석", key=f"btn_an_{item['id']}")
@@ -272,7 +300,7 @@ if menu == "지문 데이터베이스":
 # ==========================================
 elif menu == "자료 생성기":
     st.markdown("## ⚡ 자료 생성기")
-    st.markdown("<p style='color:#9ca3af; font-size:15px; margin-top:-10px;'>선택한 지문으로 [지문분석지 / 단어장 / 10종 워크북 / 변형문제]를 생성합니다.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#94a3b8; font-size:15px; margin-top:-10px;'>선택한 지문으로 [지문분석지 / 단어장 / 10종 워크북 / 변형문제]를 생성합니다.</p>", unsafe_allow_html=True)
 
     gen_col1, gen_col2 = st.columns([1, 1.8])
     with gen_col1:
@@ -295,7 +323,7 @@ elif menu == "자료 생성기":
     with gen_col2:
         st.subheader("미리보기 및 진행 상태")
         st.markdown("""
-        <div style="background-color:#181a1f; border:1px dashed #373b46; border-radius:10px; padding:60px 30px; text-align:center; color:#9ca3af;">
+        <div style="background-color:#181a1f; border:1px dashed #373b46; border-radius:10px; padding:60px 30px; text-align:center; color:#94a3b8;">
             좌측에서 지문과 필요한 자료 유형을 선택한 뒤 [일괄 생성 시작]을 누르세요.<br><br>
             생성된 문서는 학원 규격(A4 2단)이 완벽히 적용되어 깨짐 없이 출력됩니다.
         </div>
@@ -306,7 +334,7 @@ elif menu == "자료 생성기":
 # ==========================================
 elif menu == "기출 유형 세팅":
     st.markdown("## 🎯 학교별 기출 유형 세팅")
-    st.markdown("<p style='color:#9ca3af; font-size:15px; margin-top:-10px;'>인근 학교의 실제 출제 스타일을 등록하여 AI가 모방하도록 설정합니다.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#94a3b8; font-size:15px; margin-top:-10px;'>인근 학교의 실제 출제 스타일을 등록하여 AI가 모방하도록 설정합니다.</p>", unsafe_allow_html=True)
 
     school_list = ["세종고등학교", "아름고등학교", "도담고등학교", "양지고등학교", "새롬고등학교"]
     sel_school = st.selectbox("설정할 대상 학교 선택", school_list)
@@ -332,7 +360,7 @@ elif menu == "기출 유형 세팅":
 # ==========================================
 elif menu == "선생님 계정 관리":
     st.markdown("## 👥 캠퍼스 선생님 계정 관리")
-    st.markdown("<p style='color:#9ca3af; font-size:15px; margin-top:-10px;'>SDH 캠퍼스 강사진의 ID/PW를 발급하고 접근 권한을 관리합니다.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#94a3b8; font-size:15px; margin-top:-10px;'>SDH 캠퍼스 강사진의 ID/PW를 발급하고 접근 권한을 관리합니다.</p>", unsafe_allow_html=True)
 
     col_admin1, col_admin2 = st.columns([1, 1.4])
     with col_admin1:
